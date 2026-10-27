@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anja</title>
+<link href="https://fonts.googleapis.com/css?family=Poppins:600,700,800,900" rel="stylesheet">
+<style>
+  :root {
+    --accent: #E8C0FC;
+    --accent-rgb: 232, 192, 252;
+    --accent2: #FF99C8;
+    --accent2-rgb: 255, 153, 200;
+    --texto: #4a3f5c;
+    --texto-suave: rgba(74, 63, 92, 0.75);
+    --gato-tamanho: 90px;
+    --gato-ajuste: 0px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    color: var(--texto);
+    background: #f5f0ff;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #wallpaper {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(-45deg, #E8C0FC, #A8DEFA, #D0F4E0, #FCF5BF, #FF99C8, #E8C0FC);
+    background-size: 400% 400%;
+    animation: gradientMove 16s ease infinite;
+  }
+
+  @keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  #wallpaperVideo { display: none; }
+
+  #entrada {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    overflow: hidden;
+    background: transparent;
+    transition: opacity 0.9s ease, transform 0.9s ease, visibility 0.9s;
+  }
+
+  .entrada-fundo {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(-45deg, #E8C0FC, #A8DEFA, #D0F4E0, #FCF5BF, #FF99C8, #E8C0FC);
+    background-size: 400% 400%;
+    animation: gradientMove 16s ease infinite;
+  }
+
+  .entrada-fundo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  #entrada.saindo {
+    opacity: 0;
+    transform: scale(1.08);
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .nome-onda {
+    display: grid;
+    justify-items: center;
+    max-width: 94vw;
+    text-align: center;
+    animation: surgir 1.2s ease both;
+    filter: drop-shadow(0 4px 20px rgba(232, 192, 252, 0.5));
+  }
+
+  .nome-onda h2 {
+    grid-area: 1 / 1;
+    margin: 0;
+    font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(52px, 17vw, 128px);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .nome-onda h2:nth-child(1) {
+    color: transparent;
+    -webkit-text-stroke: 2.5px #E8C0FC;
+  }
+
+  .nome-onda h2:nth-child(2) {
+    color: rgba(255, 153, 200, 0.9);
+    animation: onda 4s ease-in-out infinite;
+  }
+
+  @keyframes onda {
+    0%, 100% {
+      clip-path: polygon(-15% 35%, 12% 32%, 28% 40%, 48% 55%, 65% 58%, 82% 50%, 115% 42%, 115% 115%, -15% 115%);
+    }
+    50% {
+      clip-path: polygon(-15% 55%, 14% 62%, 30% 65%, 50% 58%, 68% 42%, 85% 38%, 115% 45%, 115% 115%, -15% 115%);
+    }
+  }
+
+  /* ===== GATINHO EM CIMA DO BOTÃO ===== */
+  .entrada-botao {
+    position: relative;
+    display: inline-block;
+    /* espaço para o gatinho não encostar no nome */
+    margin-top: calc(var(--gato-tamanho) - 20px);
+  }
+
+  .gatinho {
+    position: absolute;
+    left: 50%;
+    bottom: 100%; /* base da imagem = linha de cima do botão (as patinhas) */
+    width: var(--gato-tamanho);
+    height: auto;
+    display: block;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    z-index: 2;
+    transform: translate(-50%, var(--gato-ajuste));
+    transition: transform 0.35s ease;
+    animation: surgirOpaco 1.2s 0.2s ease both;
+  }
+
+  /* acompanha o botão quando ele sobe no hover */
+  .entrada-botao:hover .gatinho {
+    transform: translate(-50%, calc(var(--gato-ajuste) - 3px));
+  }
+
+  @keyframes surgirOpaco {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  #btnEnter {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    font: inherit;
+    font-size: clamp(13px, 2.4vw, 16px);
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    padding: 12px 34px 12px 38px;
+    color: #4a3f5c;
+    background: rgba(255, 255, 255, 0.55);
+    border: 2px solid #E8C0FC;
+    border-radius: 999px;
+    box-shadow: 0 8px 30px rgba(232, 192, 252, 0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.35s ease;
+    animation: surgir 1.2s 0.2s ease both, pulsar 3.2s 1.4s ease-in-out infinite;
+  }
+
+  #btnEnter::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+    transform: skewX(-20deg);
+    animation: brilho 4.5s ease-in-out infinite;
+  }
+
+  #btnEnter:hover {
+    transform: translateY(-3px) scale(1.05);
+    background: rgba(255, 255, 255, 0.8);
+    border-color: #FF99C8;
+    box-shadow: 0 12px 40px rgba(255, 153, 200, 0.45);
+  }
+
+  @keyframes brilho {
+    0%, 55% { left: -80%; }
+    100% { left: 140%; }
+  }
+
+  @keyframes pulsar {
+    0%, 100% { box-shadow: 0 8px 30px rgba(232, 192, 252, 0.35); }
+    50% { box-shadow: 0 8px 30px rgba(232, 192, 252, 0.35), 0 0 0 12px rgba(232, 192, 252, 0); }
+  }
+
+  @keyframes surgir {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  #perfil {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    padding: 24px 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.9s ease, visibility 0.9s;
+  }
+
+  #perfil.visivel { opacity: 1; visibility: visible; }
+
+  .painel {
+    margin: auto;
+    width: 100%;
+    max-width: 350px;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: 26px 20px 22px;
+    text-align: center;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.55);
+    border: 2px solid rgba(232, 192, 252, 0.6);
+    box-shadow: 0 20px 50px rgba(232, 192, 252, 0.25);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+
+  #perfil.visivel .painel {
+    animation: entrarPainel 1s 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  @keyframes entrarPainel {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .brilhos-painel {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: 22px;
+  }
+
+  .brilho-particula {
+    position: absolute;
+    top: -20px;
+    font-size: 12px;
+    line-height: 1;
+    opacity: 0;
+    animation: cairBrilho linear infinite;
+    pointer-events: none;
+    color: #E8C0FC;
+    text-shadow: 0 0 6px currentColor;
+  }
+
+  @keyframes cairBrilho {
+    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0; }
+    12% { opacity: 0.95; }
+    85% { opacity: 0.7; }
+    100% { transform: translateY(480px) rotate(360deg) scale(0.7); opacity: 0; }
+  }
+
+  .painel > *:not(.brilhos-painel) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .painel > *:not(.brilhos-painel) { opacity: 0; transform: translateY(14px); }
+  #perfil.visivel .painel > *:not(.brilhos-painel) { animation: surgir 0.8s ease forwards; }
+  #perfil.visivel .painel > *:nth-child(2) { animation-delay: 0.65s; }
+  #perfil.visivel .painel > *:nth-child(3) { animation-delay: 0.80s; }
+  #perfil.visivel .painel > *:nth-child(4) { animation-delay: 0.95s; }
+  #perfil.visivel .painel > *:nth-child(5) { animation-delay: 1.10s; }
+  #perfil.visivel .painel > *:nth-child(6) { animation-delay: 1.25s; }
+
+  .foto-moldura {
+    width: 104px;
+    height: 104px;
+    margin: 0 auto 12px;
+    padding: 3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #E8C0FC, #FF99C8);
+    box-shadow: 0 10px 30px rgba(232, 192, 252, 0.4);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .foto-moldura:hover {
+    transform: scale(1.06) rotate(-2deg);
+    box-shadow: 0 14px 36px rgba(255, 153, 200, 0.5);
+  }
+
+  .foto-moldura.quadrada,
+  .foto-moldura.quadrada img { border-radius: 22px; }
+
+  .foto-moldura img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: 50%;
+    background: #f8f0ff;
+  }
+
+  .nome {
+    font-size: clamp(21px, 5vw, 26px);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #6b5b8a;
+    word-break: break-word;
+  }
+
+  /* O efeito fica no span de dentro (o h1 já usa a animação de entrada do painel) */
+  .nome-texto {
+    display: inline-block;
+    -webkit-text-stroke: 0.6px rgba(107, 91, 138, 0.55); /* contorno suave p/ ler as cores claras */
+    animation:
+      nomeRespirar 3s ease-in-out infinite,
+      nomeCores 6s ease-in-out infinite;
+  }
+
+  @keyframes nomeRespirar {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  @keyframes nomeCores {
+    0%, 100% {
+      color: #FF99C8;
+      text-shadow: 0 0 14px rgba(255, 153, 200, 0.9), 0 0 28px rgba(255, 153, 200, 0.6);
+    }
+    50% {
+      color: #A8DEFA;
+      text-shadow: 0 0 14px rgba(168, 222, 250, 0.9), 0 0 28px rgba(168, 222, 250, 0.6);
+    }
+  }
+
+  .divisor {
+    width: 56px;
+    height: 2px;
+    margin: 9px auto 11px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, transparent, #E8C0FC, #FF99C8, transparent);
+  }
+
+  .frases { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; }
+
+  .frase {
+    font-size: 13px;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--texto-suave);
+    padding: 2px 6px;
+    transition: color 0.3s ease, transform 0.3s ease;
+  }
+
+  .frase:hover {
+    color: #6b5b8a;
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  .info {
+    text-align: left;
+    padding: 12px 15px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(232, 192, 252, 0.4);
+    box-shadow: inset 0 0 18px rgba(232, 192, 252, 0.1);
+    transition: transform 0.35s ease, border-color 0.35s ease;
+  }
+
+  .info:hover {
+    transform: translateY(-2px);
+    border-color: #FF99C8;
+  }
+
+  .info-titulo {
+    font-size: 10.5px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #c084fc;
+    margin-bottom: 7px;
+    font-weight: 700;
+  }
+
+  .info-texto {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--texto);
+    white-space: pre-line;
+  }
+
+  .rodape {
+    margin-top: 14px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: rgba(74, 63, 92, 0.5);
+  }
+
+  /* ===== PLAYER FOFO (aparece nas duas telas) ===== */
+  #player-fofo {
+    position: fixed;
+    bottom: 22px;
+    left: 22px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1.5px solid rgba(232, 192, 252, 0.5);
+    border-radius: 50px;
+    padding: 8px 14px 8px 8px;
+    box-shadow: 0 8px 25px rgba(232, 192, 252, 0.25);
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .play-btn-fofo {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #E8C0FC, #FF99C8);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(232, 192, 252, 0.4);
+    transition: transform 0.25s ease;
+  }
+
+  .play-btn-fofo:hover {
+    transform: scale(1.1);
+  }
+
+  .play-btn-fofo svg {
+    width: 16px;
+    height: 16px;
+    fill: white;
+  }
+
+  .player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .player-titulo {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b5b8a;
+  }
+
+  .player-sub {
+    font-size: 9px;
+    color: #a08bb8;
+    letter-spacing: 0.5px;
+  }
+
+  #ytWrap {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Cursor */
+  #cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 12px;
+    height: 13px;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    display: none;
+    transition: opacity 0.25s ease;
+    will-change: transform;
+  }
+
+  #cursor.visivel { opacity: 1; }
+
+  #cursor svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    transform-origin: 1px 1px;
+    transition: transform 0.2s ease;
+    filter:
+      drop-shadow(0 0 2px rgba(232, 192, 252, 1))
+      drop-shadow(0 0 5px rgba(255, 153, 200, 0.8));
+  }
+
+  #cursor.sobre-link svg { transform: scale(1.3); }
+  #cursor.clicando svg { transform: scale(0.85); }
+
+  #chuva {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    pointer-events: none;
+    display: none;
+  }
+
+  html.cursor-custom #cursor,
+  html.cursor-custom #chuva { display: block; }
+
+  html.cursor-custom,
+  html.cursor-custom * { cursor: none !important; }
+
+  @media (max-width: 480px) {
+    .painel { padding: 24px 16px 20px; border-radius: 20px; }
+    .foto-moldura { width: 96px; height: 96px; }
+    #btnEnter { padding: 11px 28px 11px 32px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div id="wallpaper">
+    <video id="wallpaperVideo" muted loop autoplay playsinline preload="auto"></video>
+  </div>
+
+  <div id="entrada">
+    <div class="entrada-fundo" id="entradaFundo"></div>
+    <div class="nome-onda" id="nomeOnda"><h2></h2><h2 aria-hidden="true"></h2></div>
+    <div class="entrada-botao">
+      <img class="gatinho" id="gatinho" alt="" draggable="false">
+      <button id="btnEnter" type="button" aria-label="Entrar no perfil">ENTER</button>
+    </div>
+  </div>
+
+  <main id="perfil">
+    <section class="painel">
+      <div class="brilhos-painel" id="brilhosPainel"></div>
+
+      <div class="foto-moldura" id="fotoMoldura">
+        <img id="foto" alt="Foto de perfil">
+      </div>
+      <h1 class="nome"><span class="nome-texto" id="nome"></span></h1>
+      <div>
+        <div class="divisor"></div>
+        <div class="frases" id="frases"></div>
+      </div>
+      <div class="info">
+        <div class="info-titulo" id="infoTitulo"></div>
+        <div class="info-texto" id="infoTexto"></div>
+      </div>
+      <div class="rodape" id="rodape"></div>
+    </section>
+  </main>
+
+  <!-- Player fofo (sempre visível) -->
+  <div id="player-fofo">
+    <button class="play-btn-fofo" id="btnPlay" onclick="toggleMusica()">
+      <svg id="iconePlay" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+    </button>
+    <div class="player-info">
+      <div class="player-titulo">Music</div>
+      <div class="player-sub">♪ tocando</div>
+    </div>
+  </div>
+
+  <!-- Player do YouTube escondido (só o som) -->
+  <div id="ytWrap" aria-hidden="true"><div id="ytPlayer"></div></div>
+
+  <canvas id="chuva"></canvas>
+  <div id="cursor" aria-hidden="true">
+    <svg viewBox="0 0 20 22" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 1.5 L2 17.5 L6.3 13.6 L9.1 19.8 L11.7 18.6 L8.9 12.5 L14.6 12.5 Z"
+            fill="#E8C0FC" stroke="#c084fc" stroke-width="1.4" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+<script>
+const CONFIG = {
+  foto: "https://xatimg.com/image/BKrb2hmAzdUB.jpg",
+  formatoFoto: "circulo",
+  papelDeParedeEntrada: "",
+  papelDeParede: "",
+  tipoPapelDeParede: "auto",
+  fundoPainel: "",
+  fundoPainelOpacidade: 0.6,
+  nome: "Anja",
+  frases: [
+    "Escreva aqui sua primeira frase.",
+    "Você pode colocar quantas quiser.",
+    "Cada uma aparece em uma linha."
+  ],
+  infoTitulo: "Sobre mim",
+  infoTexto: "Escreva aqui uma descrição sobre você, suas preferências ou uma mensagem curta.\nVocê pode pular linha usando \\n.",
+  textoEntrada: "Anja",
+  rodape: "",
+  cursorPersonalizado: true,
+  chuvaDoCursor: true,
+  corPrincipal: "#E8C0FC",
+
+  // ----- Música (ID do vídeo do YouTube: o que vem depois de watch?v=) -----
+  musicaYoutube: "9gheDwGfUK0",
+
+  // ----- Gatinho em cima do botão ENTER -----
+  gatinho: "https://s15.gifyu.com/images/bWvJo.webp",
+  gatinhoTamanho: 120, // largura em px (a imagem original tem 400px)
+  gatinhoAjuste: 0     // positivo = desce (patinhas "afundam" no botão); negativo = sobe
+};
+
+(function () {
+  "use strict";
+
+  var FOTO_PADRAO = "data:image/svg+xml;utf8," + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">' +
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0" stop-color="#E8C0FC"/><stop offset="1" stop-color="#FF99C8"/></linearGradient></defs>' +
+    '<rect width="200" height="200" fill="url(#g)"/>' +
+    '<circle cx="100" cy="78" r="34" fill="#fff" fill-opacity=".9"/>' +
+    '<path d="M32 200c4-42 34-66 68-66s64 24 68 66z" fill="#fff" fill-opacity=".9"/></svg>'
+  );
+
+  function hexParaRgb(hex) {
+    var h = String(hex).replace("#", "").trim();
+    if (h.length === 3) h = h.split("").map(function (c) { return c + c; }).join("");
+    if (!/^[0-9a-fA-F]{6}$/.test(h)) return "232, 192, 252";
+    return parseInt(h.slice(0, 2), 16) + ", " + parseInt(h.slice(2, 4), 16) + ", " + parseInt(h.slice(4, 6), 16);
+  }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var raiz = document.documentElement;
+
+  raiz.style.setProperty("--accent", CONFIG.corPrincipal);
+  raiz.style.setProperty("--accent-rgb", hexParaRgb(CONFIG.corPrincipal));
+
+  // Gatinho
+  var gatinho = $("gatinho");
+  if (CONFIG.gatinho) {
+    gatinho.src = CONFIG.gatinho;
+    raiz.style.setProperty("--gato-tamanho", CONFIG.gatinhoTamanho + "px");
+    raiz.style.setProperty("--gato-ajuste", CONFIG.gatinhoAjuste + "px");
+    gatinho.onerror = function () { gatinho.style.display = "none"; };
+  } else {
+    gatinho.style.display = "none";
+    raiz.style.setProperty("--gato-tamanho", "20px");
+  }
+
+  var foto = $("foto");
+  foto.src = CONFIG.foto || FOTO_PADRAO;
+  foto.onerror = function () { foto.onerror = null; foto.src = FOTO_PADRAO; };
+
+  if (CONFIG.formatoFoto === "quadrado") $("fotoMoldura").classList.add("quadrada");
+
+  $("nome").textContent = CONFIG.nome;
+  document.title = CONFIG.nome;
+
+  var titulosOnda = $("nomeOnda").children;
+  titulosOnda[0].textContent = CONFIG.textoEntrada;
+  titulosOnda[1].textContent = CONFIG.textoEntrada;
+  $("nomeOnda").setAttribute("aria-label", CONFIG.textoEntrada);
+
+  $("infoTitulo").textContent = CONFIG.infoTitulo;
+  $("infoTexto").textContent = CONFIG.infoTexto;
+
+  var caixaFrases = $("frases");
+  CONFIG.frases.forEach(function (texto) {
+    var p = document.createElement("div");
+    p.className = "frase";
+    p.textContent = texto;
+    caixaFrases.appendChild(p);
+  });
+
+  if (CONFIG.rodape) $("rodape").textContent = CONFIG.rodape;
+  else $("rodape").style.display = "none";
+
+  var reduzir = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  (function criarBrilhosPainel() {
+    var container = document.getElementById("brilhosPainel");
+    if (!container) return;
+
+    var cores = ["#E8C0FC", "#A8DEFA", "#D0F4E0", "#FCF5BF", "#FF99C8"];
+    var quantidade = 45;
+
+    for (var i = 0; i < quantidade; i++) {
+      var p = document.createElement("span");
+      p.className = "brilho-particula";
+      p.textContent = "★";
+
+      var tamanho = 15 + Math.random() * 9;
+      p.style.fontSize = tamanho + "px";
+      p.style.left = Math.random() * 100 + "%";
+      p.style.color = cores[Math.floor(Math.random() * cores.length)];
+      p.style.textShadow = "0 0 " + (4 + Math.random() * 6) + "px " + p.style.color;
+      p.style.animationDuration = (4 + Math.random() * 5) + "s";
+      p.style.animationDelay = (-Math.random() * 7) + "s";
+
+      container.appendChild(p);
+    }
+  })();
+
+  var temMouse = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  if (CONFIG.cursorPersonalizado && temMouse) {
+    var cursorEl = $("cursor");
+    var canvas = $("chuva");
+    var ctx = canvas.getContext("2d");
+    var rgbChuva = hexParaRgb(CONFIG.corPrincipal);
+    var chuvaLigada = CONFIG.chuvaDoCursor && !reduzir;
+    var mx = -100, my = -100, noPagina = false;
+    var gotas = [], quadro = 0, rodando = false;
+    var MAX_GOTAS = 140;
+
+    raiz.classList.add("cursor-custom");
+
+    function ajustarCanvas() {
+      var d = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(window.innerWidth * d);
+      canvas.height = Math.round(window.innerHeight * d);
+      canvas.style.width = window.innerWidth + "px";
+      canvas.style.height = window.innerHeight + "px";
+      ctx.setTransform(d, 0, 0, d, 0, 0);
+    }
+    ajustarCanvas();
+    window.addEventListener("resize", ajustarCanvas);
+
+    function novaGota() {
+      if (gotas.length >= MAX_GOTAS) return;
+      gotas.push({
+        x: mx + (Math.random() * 14 - 7),
+        y: my + 4 + Math.random() * 8,
+        vx: Math.random() * 0.3 - 0.15,
+        vy: 0.6 + Math.random() * 1.2,
+        a: 0.55 + Math.random() * 0.4
+      });
+    }
+
+    function desenhar() {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      quadro++;
+      if (noPagina && chuvaLigada && quadro % 4 === 0) novaGota();
+      ctx.lineCap = "round";
+      ctx.lineWidth = 1.4;
+      for (var i = gotas.length - 1; i >= 0; i--) {
+        var g = gotas[i];
+        g.vy += 0.32;
+        g.x += g.vx;
+        g.y += g.vy;
+        g.a -= 0.018;
+        if (g.a <= 0 || g.y > window.innerHeight) { gotas.splice(i, 1); continue; }
+        var comp = Math.min(g.vy * 1.5, 14);
+        ctx.strokeStyle = "rgba(" + rgbChuva + "," + g.a.toFixed(2) + ")";
+        ctx.beginPath();
+        ctx.moveTo(g.x, g.y - comp);
+        ctx.lineTo(g.x, g.y);
+        ctx.stroke();
+      }
+      if (noPagina || gotas.length) requestAnimationFrame(desenhar);
+      else rodando = false;
+    }
+
+    function iniciar() {
+      if (!rodando && chuvaLigada) { rodando = true; requestAnimationFrame(desenhar); }
+    }
+
+    document.addEventListener("mousemove", function (e) {
+      mx = e.clientX; my = e.clientY;
+      cursorEl.style.transform = "translate3d(" + (mx - 1) + "px," + (my - 1) + "px,0)";
+      if (!noPagina) { noPagina = true; cursorEl.classList.add("visivel"); }
+      if (chuvaLigada) { if (Math.random() < 0.7) novaGota(); iniciar(); }
+    }, { passive: true });
+
+    document.documentElement.addEventListener("mouseleave", function () {
+      noPagina = false;
+      cursorEl.classList.remove("visivel");
+    });
+
+    document.addEventListener("mouseover", function (e) {
+      var alvo = e.target && e.target.closest ? e.target.closest("button, a, [role='button']") : null;
+      cursorEl.classList.toggle("sobre-link", !!alvo);
+    });
+
+    document.addEventListener("mousedown", function () { cursorEl.classList.add("clicando"); });
+    document.addEventListener("mouseup", function () { cursorEl.classList.remove("clicando"); });
+  }
+
+  var entrada = $("entrada");
+  var perfil = $("perfil");
+  var jaEntrou = false;
+  var iconePlay = $("iconePlay");
+
+  var playSVG = '<path d="M8 5v14l11-7z"/>';
+  var pauseSVG = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+
+  // ----- Música via YouTube (player escondido) -----
+  var yt = null, ytPronto = false, querTocar = false;
+
+  window.onYouTubeIframeAPIReady = function () {
+    yt = new YT.Player("ytPlayer", {
+      width: "200",
+      height: "200",
+      videoId: CONFIG.musicaYoutube,
+      playerVars: { autoplay: 0, controls: 0, disablekb: 1, playsinline: 1, rel: 0 },
+      events: {
+        onReady: function () {
+          ytPronto = true;
+          if (querTocar) yt.playVideo();
+        },
+        onStateChange: function (e) {
+          if (e.data === 1) iconePlay.innerHTML = pauseSVG;
+          else if (e.data === 2 || e.data === 5) iconePlay.innerHTML = playSVG;
+          else if (e.data === 0) yt.playVideo(); // repete
+        },
+        onError: function () { querTocar = false; iconePlay.innerHTML = playSVG; }
+      }
+    });
+  };
+  var ytTag = document.createElement("script");
+  ytTag.src = "https://www.youtube.com/iframe_api";
+  document.head.appendChild(ytTag);
+
+  function tocar() {
+    querTocar = true;
+    iconePlay.innerHTML = pauseSVG;
+    if (ytPronto) yt.playVideo();
+  }
+
+  // Navegadores bloqueiam som sem interação: a música começa no primeiro toque/clique/tecla
+  // em qualquer lugar da página inicial (o botão de play já funciona direto também).
+  function primeiraInteracao(e) {
+    ["pointerdown", "keydown", "touchstart"].forEach(function (ev) {
+      document.removeEventListener(ev, primeiraInteracao, true);
+    });
+    if (e.target && e.target.closest && e.target.closest("#player-fofo")) return;
+    tocar();
+  }
+  ["pointerdown", "keydown", "touchstart"].forEach(function (ev) {
+    document.addEventListener(ev, primeiraInteracao, true);
+  });
+
+  function entrar() {
+    if (jaEntrou) return;
+    jaEntrou = true;
+    entrada.classList.add("saindo");
+    perfil.classList.add("visivel");
+
+    tocar();
+    iconePlay.innerHTML = pauseSVG;
+
+    setTimeout(function () { entrada.style.display = "none"; }, 1000);
+  }
+
+  window.toggleMusica = function() {
+    if (!ytPronto) {
+      querTocar = !querTocar;
+      iconePlay.innerHTML = querTocar ? pauseSVG : playSVG;
+      return;
+    }
+    if (yt.getPlayerState() === 1) {
+      querTocar = false;
+      yt.pauseVideo();
+    } else {
+      querTocar = true;
+      yt.playVideo();
+    }
+  };
+
+  $("btnEnter").addEventListener("click", entrar);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !jaEntrou) entrar();
+  });
+})();
+</script>
+</body>
+</html>
